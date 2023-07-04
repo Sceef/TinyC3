@@ -56,7 +56,7 @@ namespace TinyC3
                     System.IO.File.Delete(filename.ToString());
                     ProgressBar.Value++;
                     curFile++;
-                    TextInput.Text = curFile + "/" + files.Count();
+                    TextFile.Text = curFile + "/" + files.Count();
                 }
             }
             Complite();
@@ -78,7 +78,7 @@ namespace TinyC3
                     System.IO.File.Delete(filename.ToString());
                     ProgressBar.Value++;
                     curFile++;
-                    TextInput.Text = curFile + "/" + files.Count();
+                    TextFile.Text = curFile + "/" + files.Count();
                 }
             }
             if (Start) { if (curFile == files.Count()) { Complite(); Start = false; } }
@@ -95,7 +95,7 @@ namespace TinyC3
 
 
             System.IO.Directory.Delete(Environment.CurrentDirectory + @"\TinyTemp", true);
-            TextInput.Text = "COMPRESSION COMPLITE";
+            TextFile.Text = "COMPRESSION COMPLITE";
             System.Media.SystemSounds.Beep.Play();
         }
         void FolderInPreviewDragOver(object sender, DragEventArgs e)
@@ -150,7 +150,7 @@ namespace TinyC3
                             File.WriteAllText(json, text);
                             files = Directory.GetFiles(Environment.CurrentDirectory + @"\TinyTemp\images", "*.*", SearchOption.TopDirectoryOnly);
                             //Работа с картинками
-                            TextInput.Text = 0 + "/" + files.Count();
+                            TextFile.Text = 0 + "/" + files.Count();
                             curFile = 0;
                             Start = true;
                             ProgressBar.Maximum = files.Count();
