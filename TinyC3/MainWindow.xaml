@@ -10,6 +10,7 @@
     <Grid x:Name="Grid" Margin="0,0,0,0">
         <TextBox x:Name="TextAPI" Margin="20,8,0,0" TextWrapping="Wrap" Text="TinyPNG_ApiKey" TextChanged="TextBox_TextChanged" Height="18" VerticalAlignment="Top" HorizontalAlignment="Left" Width="479"/>
         <TextBlock x:Name="TextFile" Margin="20,54,320,0" TextWrapping="Wrap" Text="No Files" Height="16" VerticalAlignment="Top"/>
+        <TextBlock x:Name="TokenStatus" Margin="20,74,0,0" TextWrapping="Wrap" Text="Tokens: Unknown" Height="16" VerticalAlignment="Top" HorizontalAlignment="Left" Width="479"/>
         <ProgressBar x:Name="ProgressBar" Margin="20,29,0,0" Height="13" VerticalAlignment="Top" HorizontalAlignment="Left" Width="479">
             <UIElement.RenderTransform>
                 <TransformGroup>
