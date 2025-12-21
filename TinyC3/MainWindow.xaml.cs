@@ -21,6 +21,7 @@ namespace TinyC3
         public int curFile = 0;
         public string[] files;
         public bool Start = false;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -33,12 +34,32 @@ namespace TinyC3
                 Grid.PreviewDragOver += FolderInPreviewDragOver;
                 Grid.Drop += FolderInDragDrop;
                 if (File.Exists(path)) { TextAPI.Text = File.ReadAllText(path); }
+                
+                // Initialize token status
+                UpdateTokenStatus();
             };
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             Tinify.Key = TextAPI.Text;
+            UpdateTokenStatus();
+        }
+        
+        private async void UpdateTokenStatus()
+        {
+            try
+            {
+                // Get compression count to calculate remaining tokens
+                // The Tinify API has a limit of 500 compressions per month for free accounts
+                var compressionCount = await Tinify.CompressionCount();
+                var remainingTokens = Math.Max(0, 500 - compressionCount);
+                TokenStatus.Text = $"Tokens: {remainingTokens}/500 (Used: {compressionCount})";
+            }
+            catch
+            {
+                TokenStatus.Text = "Tokens: Error retrieving status";
+            }
         }
 
         public async void CompressOne(string[] files)
@@ -48,21 +69,19 @@ namespace TinyC3
             {
                 if (Regex.IsMatch(filename, @"\.jpg$|\.png$|\.jpeg$"))
                 {
-                    var source = Tinify.FromFile(filename.ToString());
-
-                    var converted = source.Convert(new { type = new[] { "image/webp" } });
-                    Result response = await converted.GetResult();
-                    await converted.ToFile(filename.ToString().Split('.')[0] + "." + response.Extension);
-                    System.IO.File.Delete(filename.ToString());
+                    await ProcessImage(filename);
                     ProgressBar.Value++;
                     curFile++;
                     TextFile.Text = curFile + "/" + files.Count();
+                    
+                    // Update token status after each compression
+                    UpdateTokenStatus();
                 }
             }
             Complite();
 
-
         }
+        
         public async void Compress(List<string> filez)
         {
 
@@ -70,19 +89,27 @@ namespace TinyC3
             {
                 if (Regex.IsMatch(filename, @"\.jpg$|\.png$|\.jpeg$"))
                 {
-                    var source = Tinify.FromFile(filename.ToString());
-
-                    var converted = source.Convert(new { type = new[] { "image/webp" } });
-                    Result response = await converted.GetResult();
-                    await converted.ToFile(filename.ToString().Split('.')[0] + "." + response.Extension);
-                    System.IO.File.Delete(filename.ToString());
+                    await ProcessImage(filename);
                     ProgressBar.Value++;
                     curFile++;
                     TextFile.Text = curFile + "/" + files.Count();
+                    
+                    // Update token status after each compression
+                    UpdateTokenStatus();
                 }
             }
             if (Start) { if (curFile == files.Count()) { Complite(); Start = false; } }
 
+        }
+        
+        private async Task ProcessImage(string filename)
+        {
+            var source = Tinify.FromFile(filename.ToString());
+
+            var converted = source.Convert(new { type = new[] { "image/webp" } });
+            Result response = await converted.GetResult();
+            await converted.ToFile(filename.ToString().Split('.')[0] + "." + response.Extension);
+            System.IO.File.Delete(filename.ToString());
         }
 
         public void Complite()
@@ -96,6 +123,10 @@ namespace TinyC3
 
             System.IO.Directory.Delete(Environment.CurrentDirectory + @"\TinyTemp", true);
             TextFile.Text = "COMPRESSION COMPLITE";
+            
+            // Update token status after completion
+            UpdateTokenStatus();
+            
             System.Media.SystemSounds.Beep.Play();
         }
         void FolderInPreviewDragOver(object sender, DragEventArgs e)
@@ -155,6 +186,10 @@ namespace TinyC3
                             Start = true;
                             ProgressBar.Maximum = files.Count();
                             ProgressBar.Value = 0;
+                            
+                            // Update token status before starting compression
+                            UpdateTokenStatus();
+                            
                             if (files.Count() < 4) { new Thread(() => { Dispatcher.Invoke((Action)(() => { CompressOne(files); })); }).Start(); }
                             else if (files.Count() >= 4)
                             {
@@ -165,7 +200,7 @@ namespace TinyC3
 
                                 foreach (var file0 in filesList)
                                 {
-                                    new Thread(() =>
+                                    new Thread(() => 
                                     {
                                         Dispatcher.Invoke((Action)(() =>
                                         {
